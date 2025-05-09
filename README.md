@@ -63,7 +63,7 @@ All actions are executed on-chain, ensuring verifiability and trustlessness.
 
 ## 🧰 Tech Stack
 
-- **Smart Contracts**: Solidity + Hardhat
+- **Smart Contracts**: Solidity + Foundry
 - **Blockchain**: Base Ethereum L2
 - **Randomness**: Chainlink VRF
 - **Frontend**: React, Ethers.js, Farcaster Frames
