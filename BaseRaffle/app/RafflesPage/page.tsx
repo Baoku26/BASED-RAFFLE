@@ -1,9 +1,11 @@
-'use client'
+'use client';
 
 import RaffleCard from "../components/RaffleCard";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ethers } from "ethers";
+import abiJson from "../../abi/abi.json";
 
 type RafflesProps = {
   id: string;
@@ -16,62 +18,82 @@ type RafflesProps = {
   ownerPics: string;
 };
 
-type userProps = {
-  userName: string;
-  walletAddress: string;
-  profilePic: string;
-};
-
 export default function HomePage() {
+  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  
+  if (!CONTRACT_ADDRESS) {
+    console.error("Missing contract address in environment variables.");
+  }
+
   const [raffles, setRaffles] = useState<RafflesProps[]>([]);
-  const [user, setUser] = useState<userProps>({
-    userName: "",
-    walletAddress: "",
-    profilePic: "",
-  });
-  const userId = "0x1234567890abcdef"; 
+  const [walletAddress, setWalletAddress] = useState<string>("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const address = localStorage.getItem("walletAddress");
+      setWalletAddress(address || "");
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchRaffles() {
-      console.log("Fetching raffles...");
-      setRaffles([]);
+      if (!CONTRACT_ADDRESS) {
+        console.error("Contract address is not defined.");
+        return;
+      }
+
+      try {
+        const provider = new ethers.JsonRpcProvider(
+          process.env.NEXT_PUBLIC_RPC_URL // Make sure this environment variable is set
+        );
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, abiJson.abi, provider);
+
+        const count = await contract.raffleCount();
+        const rafflesArr: RafflesProps[] = [];
+
+        for (let i = 0; i < count; i++) {
+          const r = await contract.raffles(i);
+          rafflesArr.push({
+            id: i.toString(),
+            name: `Raffle #${i + 1}`,
+            prize: ethers.formatEther(r.prizePool) + " ETH",
+            picture: r.image || "/images/default.jpg",
+            timeRemaining: new Date(Number(r.endTime) * 1000),
+            noOfWinners: Number(r.numWinners),
+            owner: r.creator,
+            ownerPics: "/images/default-owner.jpg",
+          });
+        }
+        setRaffles(rafflesArr);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("Error fetching raffles:", err.message);
+        } else {
+          console.error("Unknown error occurred while fetching raffles.");
+        }
+        setRaffles([]);
+      }
     }
     fetchRaffles();
-  }, []);
-  useEffect(() => {
-      async function fetchUser() {
-       setUser({
-          userName: "JohnDoe",
-          walletAddress: "0x1234567890abcdef",
-          profilePic: "/images/farcester-logo.jpg",
-       })
-      }
-      fetchUser();
-  }, [userId]);
+  }, [CONTRACT_ADDRESS]);
 
   return (
-    <div className=" h-screen">
-      <div className="max-w-md mx-auto  shadow-lg rounded-lg p-6">
-        {/* User Profile Section */}
+    <div className="h-screen">
+      <div className="max-w-md mx-auto shadow-lg rounded-lg p-6">
+        {/* Custom Picture and Wallet Address */}
         <div className="flex items-center mb-8">
-          {user.profilePic ? (
-            <Image
-              src={user.profilePic}
-              alt={`${user.userName} profile picture`}
-              width={60}
-              height={60}
-              className="rounded-full shadow-lg"
-            />
-          ) : (
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-gray-500">No Image</span>
-            </div>
-          )}
+          <Image
+            src="/images/baseraffleLogo.jpg"
+            alt="Custom profile"
+            width={60}
+            height={60}
+            className="rounded-full shadow-lg"
+          />
           <div className="ml-4">
-            <h3 className="text-lg font-bold text-gray-800">
-              Username: {user.userName || "Guest"}
-            </h3>
-            <p className="text-sm text-gray-600">
-              Wallet Address: {user.walletAddress || "Not Connected"}
+            <p className="text-sm text-gray-600 break-all">
+              {walletAddress
+                ? `Wallet: ${walletAddress}`
+                : "Wallet not connected"}
             </p>
           </div>
         </div>
