@@ -12,6 +12,7 @@ contract RafflePlatform {
         address[] participants;
         bool isFinalized;
         address[] winners;
+        string name;
     }
 
     mapping(uint256 => Raffle) public raffles;
@@ -39,7 +40,8 @@ contract RafflePlatform {
         uint256 _joinFee,
         uint256 _numWinners,
         uint256 _endTime,
-        string memory _image
+        string memory _image,
+        string memory _name,
     ) external payable {
         require(msg.value > 0, "Prize pool must be non-zero");
         require(_endTime > block.timestamp, "End time must be in the future");
@@ -57,6 +59,7 @@ contract RafflePlatform {
         raffle.endTime = _endTime;
         raffle.isFinalized = false;
         raffle.image = _image;
+        raffle.name = _name
 
         emit RaffleCreated(raffleCount, msg.sender, netPrize);
         raffleCount++;

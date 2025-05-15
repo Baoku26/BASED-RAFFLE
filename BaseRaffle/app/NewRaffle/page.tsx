@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -10,6 +10,7 @@ type RaffleProps = {
   picture: string;
   prize: number;
   noOfWinners: number;
+  endTime: number;
 };
 
 export default function NewRaffle() {
@@ -18,6 +19,7 @@ export default function NewRaffle() {
     picture: "",
     prize: 0,
     noOfWinners: 1,
+    endTime: 3600,
   });
   const [picPreview, setPicPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -56,30 +58,51 @@ export default function NewRaffle() {
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      
-      const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+
+      const CONTRACT_ADDRESS =
+        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
+        "0x99f318d5b211eee30fbf0361e3712ee4af045528";
       if (!CONTRACT_ADDRESS) {
         setMessage("Contract address missing.");
         setLoading(false);
         return;
       }
 
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, abiJson.abi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        abiJson.abi,
+        signer
+      );
 
       const joinFee = ethers.parseEther(raffleInfo.prize.toString());
-      const endTime = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
+      const endTime = raffleInfo.endTime;
 
-      const tx = await contract.createRaffle(joinFee, raffleInfo.noOfWinners, endTime, raffleInfo.picture, {
-        value: joinFee,
-      });
+      const tx = await contract.createRaffle(
+        joinFee,
+        raffleInfo.noOfWinners,
+        endTime,
+        raffleInfo.picture,
+        raffleInfo.raffleName,
+        {
+          value: joinFee,
+        }
+      );
       await tx.wait();
 
       setMessage("Raffle created successfully!");
-      setRaffleInfo({ raffleName: "", picture: "", prize: 0, noOfWinners: 1 });
+      setRaffleInfo({
+        raffleName: "",
+        picture: "",
+        prize: 0,
+        noOfWinners: 1,
+        endTime: 3600,
+      });
       setPicPreview("");
-      window.location.href = '/RafflesPage';
+      window.location.href = "/RafflesPage";
     } catch (err: unknown) {
-      setMessage(err instanceof Error ? err.message : "Failed to create raffle.");
+      setMessage(
+        err instanceof Error ? err.message : "Failed to create raffle."
+      );
     }
     setLoading(false);
   }
@@ -170,7 +193,7 @@ export default function NewRaffle() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
-                    <option key={num} value={num}>
+                    <option className="text-black" key={num} value={num}>
                       {num}
                     </option>
                   ))}
@@ -178,7 +201,35 @@ export default function NewRaffle() {
               </div>
             </div>
           </div>
-          <p>Note: There is a 1% Charge fee for every gift</p>
+          <div>
+            <label>
+              <p>End time</p>
+            </label>
+            <select
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={raffleInfo.endTime}
+              onChange={(e) =>
+                updateRaffleInfo("endTime", parseInt(e.target.value))
+              }
+            >
+              <option className="text-black" value="3600">
+                1 hr
+              </option>
+              <option className="text-black" value="7200">
+                2 hrs
+              </option>
+              <option className="text-black" value="21600">
+                6 hrs
+              </option>
+              <option className="text-black" value="43200">
+                12 hrs
+              </option>
+              <option className="text-black" value="86400">
+                24 hrs
+              </option>
+            </select>
+          </div>
+          <p>Note: There is a 2% Charge fee for every gift</p>
           <div className="flex justify-center mt-2">
             <button
               type="submit"
@@ -189,7 +240,9 @@ export default function NewRaffle() {
             </button>
           </div>
           {message && (
-            <div className="text-center text-sm text-red-500 mt-2">{message}</div>
+            <div className="text-center text-sm text-red-500 mt-2">
+              {message}
+            </div>
           )}
         </form>
       </div>

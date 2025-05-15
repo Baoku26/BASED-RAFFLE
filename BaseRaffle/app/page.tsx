@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Web3 from "web3";
-import Loading from './components/Loading';
+import Loading from "./components/Loading";
 
 declare global {
   interface Window {
-    ethereum?: import("ethers").Eip1193Provider; 
+    ethereum?: import("ethers").Eip1193Provider;
   }
 }
 
@@ -24,18 +24,18 @@ export default function LandingPage() {
 
     if (typeof window !== "undefined" && window.ethereum) {
       try {
-        const web3 = new Web3(window.ethereum); 
+        const web3 = new Web3(window.ethereum);
         await window.ethereum.request({ method: "eth_requestAccounts" });
 
         const accounts: string[] = await web3.eth.getAccounts();
         setAccount(accounts[0]);
-        localStorage.setItem('walletAddress', accounts[0]);
-        window.location.href = '/RafflesPage';
+        localStorage.setItem("walletAddress", accounts[0]);
+        window.location.href = "/RafflesPage";
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('Failed to connect');
+          setError("Failed to connect");
         }
       } finally {
         setLoading(false);
@@ -102,7 +102,7 @@ export default function LandingPage() {
           <div className="text-green-600 font-semibold mb-2">
             Connected: {account.slice(0, 6)}...{account.slice(-4)}
             <div className="mt-4">
-              <Link href="/SignIn">
+              <Link href="/RafflesPage">
                 <button className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
                   Go to Dashboard
                 </button>

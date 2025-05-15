@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import RaffleCard from "../components/RaffleCard";
 import { useState, useEffect } from "react";
@@ -20,7 +20,7 @@ type RafflesProps = {
 
 export default function HomePage() {
   const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-  
+
   if (!CONTRACT_ADDRESS) {
     console.error("Missing contract address in environment variables.");
   }
@@ -44,9 +44,13 @@ export default function HomePage() {
 
       try {
         const provider = new ethers.JsonRpcProvider(
-          process.env.NEXT_PUBLIC_RPC_URL // Make sure this environment variable is set
+          process.env.NEXT_PUBLIC_RPC_URL || ""
         );
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, abiJson.abi, provider);
+        const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          abiJson.abi,
+          provider
+        );
 
         const count = await contract.raffleCount();
         const rafflesArr: RafflesProps[] = [];
