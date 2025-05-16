@@ -19,7 +19,9 @@ type RafflesProps = {
 };
 
 export default function HomePage() {
-  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  const CONTRACT_ADDRESS =
+    process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
+    "0xfedd796d011b13f364a2dda89eb328cf89cc4e88";
 
   if (!CONTRACT_ADDRESS) {
     console.error("Missing contract address in environment variables.");
