@@ -39,7 +39,7 @@ export default function NewRaffle() {
           const signer = await provider.getSigner();
 
           const contractInstance = new ethers.Contract(
-            "0xfedd796d011b13f364a2dda89eb328cf89cc4e88",
+            "0xb8363104b0a13d711e1941bf4ceebd2b9c57d96a",
             abiJson.abi,
             signer
           );
