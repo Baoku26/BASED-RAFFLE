@@ -14,7 +14,7 @@ type RafflesProps = {
   picture: string;
   timeRemaining: Date;
   noOfWinners: number;
-  owner: number;
+  owner: string;
   ownerPics: string;
 };
 
@@ -23,18 +23,23 @@ export default function HomePage() {
     process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
     "0xfedd796d011b13f364a2dda89eb328cf89cc4e88";
 
-  if (!CONTRACT_ADDRESS) {
-    console.error("Missing contract address in environment variables.");
-  }
-
   const [raffles, setRaffles] = useState<RafflesProps[]>([]);
   const [walletAddress, setWalletAddress] = useState<string>("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const address = localStorage.getItem("walletAddress");
-      setWalletAddress(address || "");
+    async function fetchWalletAddress() {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          setWalletAddress(accounts[0] || "");
+        } catch (error) {
+          console.error("Error fetching wallet address:", error);
+        }
+      }
     }
+    fetchWalletAddress();
   }, []);
 
   useEffect(() => {
@@ -61,7 +66,7 @@ export default function HomePage() {
           const r = await contract.raffles(i);
           rafflesArr.push({
             id: i.toString(),
-            name: `Raffle #${i + 1}`,
+            name: r.name || `Raffle #${i + 1}`,
             prize: ethers.formatEther(r.prizePool) + " ETH",
             picture: r.image || "/images/default.jpg",
             timeRemaining: new Date(Number(r.endTime) * 1000),
@@ -71,12 +76,8 @@ export default function HomePage() {
           });
         }
         setRaffles(rafflesArr);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          console.error("Error fetching raffles:", err.message);
-        } else {
-          console.error("Unknown error occurred while fetching raffles.");
-        }
+      } catch (err) {
+        console.error("Error fetching raffles:", err);
         setRaffles([]);
       }
     }
@@ -106,7 +107,7 @@ export default function HomePage() {
 
         {/* Raffles Section */}
         <div>
-          {raffles && raffles.length > 0 ? (
+          {raffles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {raffles.map((raffle) => (
                 <RaffleCard

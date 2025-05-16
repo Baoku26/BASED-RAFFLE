@@ -10,7 +10,7 @@ type RaffleProps = {
   picture: string;
   prize: number; // in ETH
   joinFee: number; // in ETH
-  noOfWinners: number;
+  numWinners: number;
   endTime: number;
 };
 
@@ -20,9 +20,10 @@ export default function NewRaffle() {
     picture: "",
     prize: 0,
     joinFee: 0,
-    noOfWinners: 1,
+    numWinners: 1,
     endTime: 3600,
   });
+
   const [picPreview, setPicPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
@@ -31,17 +32,25 @@ export default function NewRaffle() {
   useEffect(() => {
     async function initContract() {
       if (typeof window.ethereum !== "undefined") {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
+        try {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
 
-        // Extract ABI array from the object
-        const contractInstance = new ethers.Contract(
-          "0xfedd796d011b13f364a2dda89eb328cf89cc4e88",
-          abiJson.abi,
-          signer
-        );
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
 
-        setContract(contractInstance);
+          const contractInstance = new ethers.Contract(
+            "0xfedd796d011b13f364a2dda89eb328cf89cc4e88",
+            abiJson.abi,
+            signer
+          );
+
+          setContract(contractInstance);
+        } catch (error) {
+          console.error("Error initializing contract:", error);
+          setMessage("Failed to connect wallet. Please try again.");
+        }
+      } else {
+        setMessage("MetaMask not detected. Please install MetaMask.");
       }
     }
     initContract();
@@ -83,7 +92,7 @@ export default function NewRaffle() {
 
       const tx = await contract.createRaffle(
         joinFee,
-        raffleInfo.noOfWinners,
+        raffleInfo.numWinners,
         endTime,
         raffleInfo.picture,
         raffleInfo.raffleName,
@@ -93,10 +102,15 @@ export default function NewRaffle() {
       );
 
       await tx.wait();
-      setMessage("Raffle created successfully!");
-    } catch (error) {
-      console.error(error);
-      setMessage("Raffle creation failed.");
+      setMessage("✅ Raffle created successfully!");
+    } catch (err) {
+      if (err instanceof Error) {
+        setMessage(
+          `❌ Raffle creation failed: ${err.message || "Unknown error"}`
+        );
+      } else {
+        setMessage("❌ An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +121,6 @@ export default function NewRaffle() {
       <div className="max-w-lg w-full border shadow-md rounded-lg p-6">
         <h3 className="text-2xl font-bold text-center mb-6">Create Raffle</h3>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Raffle Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Raffle Name
@@ -117,12 +130,11 @@ export default function NewRaffle() {
               placeholder="Enter Raffle Name"
               value={raffleInfo.raffleName}
               onChange={(e) => updateRaffleInfo("raffleName", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
               required
             />
           </div>
 
-          {/* Join Fee */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Join Fee (ETH)
@@ -136,31 +148,18 @@ export default function NewRaffle() {
               onChange={(e) =>
                 updateRaffleInfo("joinFee", parseFloat(e.target.value))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
               required
             />
           </div>
 
-          {/* Upload Photo */}
           <div className="flex">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Upload Photo
-              </h3>
-              <label htmlFor="image" className="block cursor-pointer">
-                {picPreview ? (
-                  <Image
-                    src={picPreview}
-                    alt="Preview"
-                    width={100}
-                    height={100}
-                    className="rounded-lg"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-lg">
-                    <span className="text-gray-500">No Image</span>
-                  </div>
-                )}
               </label>
               <input
                 type="file"
@@ -172,45 +171,79 @@ export default function NewRaffle() {
                 className="mt-2 block w-full text-sm text-gray-500"
                 required
               />
+              {picPreview && (
+                <Image
+                  src={picPreview}
+                  alt="Preview"
+                  width={100}
+                  height={100}
+                  className="rounded-lg mt-2"
+                />
+              )}
             </div>
 
-            {/* Prize */}
-            <div className="flex flex-col gap-4 ml-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prize (ETH)
-                </label>
-                <input
-                  type="number"
-                  min={0.0001}
-                  step={0.0001}
-                  placeholder="Enter Prize"
-                  value={raffleInfo.prize}
-                  onChange={(e) =>
-                    updateRaffleInfo("prize", parseFloat(e.target.value))
-                  }
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
+            <div className="ml-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prize (ETH)
+              </label>
+              <input
+                type="number"
+                min={0.0001}
+                step={0.0001}
+                placeholder="Enter Prize"
+                value={raffleInfo.prize}
+                onChange={(e) =>
+                  updateRaffleInfo("prize", parseFloat(e.target.value))
+                }
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                required
+              />
             </div>
           </div>
 
-          {/* Submission Button */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Number of Winners
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={raffleInfo.numWinners}
+              onChange={(e) =>
+                updateRaffleInfo("numWinners", parseInt(e.target.value))
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              End Time (seconds)
+            </label>
+            <input
+              type="number"
+              min={3600}
+              value={raffleInfo.endTime}
+              onChange={(e) =>
+                updateRaffleInfo("endTime", parseInt(e.target.value))
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            />
+          </div>
+
           <div className="flex justify-center mt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg"
             >
               {loading ? "Creating..." : "Create Raffle"}
             </button>
           </div>
 
           {message && (
-            <div className="text-center text-sm text-red-500 mt-2">
-              {message}
-            </div>
+            <p className="text-center text-sm text-red-500 mt-2">{message}</p>
           )}
         </form>
       </div>

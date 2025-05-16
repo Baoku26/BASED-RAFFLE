@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Image from "next/image";
 import Timer from "./Timer";
@@ -20,7 +20,7 @@ export default function RaffleCard({
   picture: string;
   timeRemaining: Date;
   noOfWinners: number;
-  owner: number;
+  owner: string;
   ownerPics: string;
 }) {
   return (
