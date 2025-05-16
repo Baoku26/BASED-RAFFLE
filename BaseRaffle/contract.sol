@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.0;
 
-contract RafflePlatform {
+contract RaffleContract {
     struct Raffle {
         address creator;
         uint256 prizePool;
@@ -20,72 +20,59 @@ contract RafflePlatform {
     address public owner;
     uint256 public platformFees;
 
+    constructor() {
+        owner = msg.sender;
+    }
+
     event RaffleCreated(uint256 indexed raffleId, address indexed creator, uint256 prizePool);
     event RaffleEntered(uint256 indexed raffleId, address indexed participant);
     event RaffleFinalized(uint256 indexed raffleId, address[] winners);
     event PlatformFeeWithdrawn(address owner, uint256 amount);
 
-    constructor() {
-        owner = msg.sender;
-    }
-
-    /**
-     * @notice Creates a new raffle with a pre-funded prize pool.
-     * @param _joinFee The fee (in wei) that each participant will pay to join.
-     * @param _numWinners The number of winners that will be drawn.
-     * @param _endTime The UNIX timestamp when the raffle expires (must be in the future).
-     * @param _image The image URL for the raffle.
-     */
     function createRaffle(
         uint256 _joinFee,
-        uint256 _numWinners,
+        uint8 _numWinners,
         uint256 _endTime,
         string memory _image,
-        string memory _name,
-    ) external payable {
-        require(msg.value > 0, "Prize pool must be non-zero");
-        require(_endTime > block.timestamp, "End time must be in the future");
-        require(_numWinners > 0, "At least one winner is required");
+        string memory _name
+    ) public payable {
+        require(msg.value > 0, "Prize must be greater than 0");
+        require(_numWinners > 0, "Must have at least one winner");
 
-        uint256 creatorFee = (msg.value * 2) / 100;
-        uint256 netPrize = msg.value - creatorFee;
-        platformFees += creatorFee;
+        address[] memory emptyArray;
 
-        Raffle storage raffle = raffles[raffleCount];
-        raffle.creator = msg.sender;
-        raffle.prizePool = netPrize;
-        raffle.joinFee = _joinFee;
-        raffle.numWinners = _numWinners;
-        raffle.endTime = _endTime;
-        raffle.isFinalized = false;
-        raffle.image = _image;
-        raffle.name = _name
+        raffles[raffleCount] = Raffle({
+            creator: msg.sender,
+            prizePool: msg.value,
+            joinFee: _joinFee,
+            numWinners: _numWinners,
+            endTime: block.timestamp + _endTime,
+            image: _image,
+            name: _name,
+            participants: emptyArray,
+            isFinalized: false,
+            winners: emptyArray
+        });
 
-        emit RaffleCreated(raffleCount, msg.sender, netPrize);
+        emit RaffleCreated(raffleCount, msg.sender, msg.value);
         raffleCount++;
     }
 
-    /**
-     * @notice Allows a user to join an active raffle.
-     * @param _raffleId The identifier of the raffle to join.
-     */
-    function joinRaffle(uint256 _raffleId) external payable {
-        require(_raffleId < raffleCount, "Invalid raffle ID");
+    function enterRaffle(uint256 _raffleId) public payable {
         Raffle storage raffle = raffles[_raffleId];
         require(block.timestamp < raffle.endTime, "Raffle has ended");
-        require(!raffle.isFinalized, "Raffle already finalized");
-        require(msg.value == raffle.joinFee, "Incorrect join fee sent");
+        require(msg.value == raffle.joinFee, "Incorrect join fee amount");
 
-        platformFees += msg.value;
         raffle.participants.push(msg.sender);
-
         emit RaffleEntered(_raffleId, msg.sender);
     }
 
-    /**
-     * @notice Finalizes a raffle manually after its end time using block randomness.
-     * @param _raffleId The identifier of the raffle to finalize.
-     */
+    function getRaffleById(uint256 _raffleId) public view returns (Raffle memory) {
+        require(_raffleId < raffleCount, "Raffle does not exist");
+        return raffles[_raffleId];
+    }
+
+
     function finalizeRaffle(uint256 _raffleId) external {
         Raffle storage raffle = raffles[_raffleId];
         require(block.timestamp >= raffle.endTime, "Raffle not ended yet");
@@ -95,17 +82,17 @@ contract RafflePlatform {
         raffle.isFinalized = true;
 
         address[] memory winners = new address[](raffle.numWinners);
-        uint256 seed = uint256(block.prevrandao) + block.timestamp;
-        uint256 participantsLength = raffle.participants.length;
+        uint256 seed = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender)));
 
         for (uint256 i = 0; i < raffle.numWinners; i++) {
-            uint256 index = uint256(keccak256(abi.encode(seed, i))) % participantsLength;
+            uint256 index = seed % raffle.participants.length;
             winners[i] = raffle.participants[index];
+            seed = uint256(keccak256(abi.encodePacked(seed, i))); 
         }
 
         raffle.winners = winners;
-
         uint256 share = raffle.prizePool / raffle.numWinners;
+
         for (uint256 i = 0; i < winners.length; i++) {
             payable(winners[i]).transfer(share);
         }
@@ -113,9 +100,6 @@ contract RafflePlatform {
         emit RaffleFinalized(_raffleId, winners);
     }
 
-    /**
-     * @notice Withdraw platform fees manually (only owner).
-     */
     function withdrawFees() external {
         require(msg.sender == owner, "Only owner can withdraw fees");
         require(platformFees > 0, "No fees to withdraw");
@@ -126,6 +110,4 @@ contract RafflePlatform {
 
         emit PlatformFeeWithdrawn(owner, amount);
     }
-
-    receive() external payable {}
 }

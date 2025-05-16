@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 import abiJson from "../../abi/abi.json";
@@ -8,7 +8,8 @@ import abiJson from "../../abi/abi.json";
 type RaffleProps = {
   raffleName: string;
   picture: string;
-  prize: number;
+  prize: number; // in ETH
+  joinFee: number; // in ETH
   noOfWinners: number;
   endTime: number;
 };
@@ -18,12 +19,30 @@ export default function NewRaffle() {
     raffleName: "",
     picture: "",
     prize: 0,
+    joinFee: 0,
     noOfWinners: 1,
     endTime: 3600,
   });
   const [picPreview, setPicPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
+
+  useEffect(() => {
+    async function initContract() {
+      if (typeof window.ethereum !== "undefined") {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contractInstance = new ethers.Contract(
+          "0xfedd796d011b13f364a2dda89eb328cf89cc4e88",
+          abiJson,
+          signer
+        );
+        setContract(contractInstance);
+      }
+    }
+    initContract();
+  }, []);
 
   function updateRaffleInfo(field: keyof RaffleProps, value: string | number) {
     setRaffleInfo((prev) => ({
@@ -44,37 +63,19 @@ export default function NewRaffle() {
     fileReader.readAsDataURL(file);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage("");
-    setLoading(true);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!contract) {
+      setMessage("Contract not initialized.");
+      return;
+    }
 
     try {
-      if (typeof window === "undefined" || !window.ethereum) {
-        setMessage("MetaMask not detected.");
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
+      setMessage("");
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const CONTRACT_ADDRESS =
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
-        "0x99f318d5b211eee30fbf0361e3712ee4af045528";
-      if (!CONTRACT_ADDRESS) {
-        setMessage("Contract address missing.");
-        setLoading(false);
-        return;
-      }
-
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        abiJson.abi,
-        signer
-      );
-
-      const joinFee = ethers.parseEther(raffleInfo.prize.toString());
+      const joinFee = ethers.parseEther(raffleInfo.joinFee.toString());
+      const prizePool = ethers.parseEther(raffleInfo.prize.toString());
       const endTime = raffleInfo.endTime;
 
       const tx = await contract.createRaffle(
@@ -84,28 +85,19 @@ export default function NewRaffle() {
         raffleInfo.picture,
         raffleInfo.raffleName,
         {
-          value: joinFee,
+          value: prizePool,
         }
       );
-      await tx.wait();
 
+      await tx.wait();
       setMessage("Raffle created successfully!");
-      setRaffleInfo({
-        raffleName: "",
-        picture: "",
-        prize: 0,
-        noOfWinners: 1,
-        endTime: 3600,
-      });
-      setPicPreview("");
-      window.location.href = "/RafflesPage";
-    } catch (err: unknown) {
-      setMessage(
-        err instanceof Error ? err.message : "Failed to create raffle."
-      );
+    } catch (error) {
+      console.error(error);
+      setMessage("Raffle creation failed.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -122,6 +114,25 @@ export default function NewRaffle() {
               placeholder="Enter Raffle Name"
               value={raffleInfo.raffleName}
               onChange={(e) => updateRaffleInfo("raffleName", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Join Fee */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Join Fee (ETH)
+            </label>
+            <input
+              type="number"
+              min={0.0001}
+              step={0.0001}
+              placeholder="Join Fee"
+              value={raffleInfo.joinFee}
+              onChange={(e) =>
+                updateRaffleInfo("joinFee", parseFloat(e.target.value))
+              }
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -155,7 +166,7 @@ export default function NewRaffle() {
                 onChange={(e) =>
                   e.target.files && updatePicture(e.target.files[0])
                 }
-                className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="mt-2 block w-full text-sm text-gray-500"
                 required
               />
             </div>
@@ -179,57 +190,10 @@ export default function NewRaffle() {
                   required
                 />
               </div>
-
-              {/* Number of Winners */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Winners
-                </label>
-                <select
-                  value={raffleInfo.noOfWinners}
-                  onChange={(e) =>
-                    updateRaffleInfo("noOfWinners", parseInt(e.target.value))
-                  }
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
-                    <option className="text-black" key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
           </div>
-          <div>
-            <label>
-              <p>End time</p>
-            </label>
-            <select
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={raffleInfo.endTime}
-              onChange={(e) =>
-                updateRaffleInfo("endTime", parseInt(e.target.value))
-              }
-            >
-              <option className="text-black" value="3600">
-                1 hr
-              </option>
-              <option className="text-black" value="7200">
-                2 hrs
-              </option>
-              <option className="text-black" value="21600">
-                6 hrs
-              </option>
-              <option className="text-black" value="43200">
-                12 hrs
-              </option>
-              <option className="text-black" value="86400">
-                24 hrs
-              </option>
-            </select>
-          </div>
-          <p>Note: There is a 2% Charge fee for every gift</p>
+
+          {/* Submission Button */}
           <div className="flex justify-center mt-2">
             <button
               type="submit"
@@ -239,6 +203,7 @@ export default function NewRaffle() {
               {loading ? "Creating..." : "Create Raffle"}
             </button>
           </div>
+
           {message && (
             <div className="text-center text-sm text-red-500 mt-2">
               {message}

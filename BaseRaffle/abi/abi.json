@@ -95,9 +95,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint8",
           "name": "_numWinners",
-          "type": "uint256"
+          "type": "uint8"
         },
         {
           "internalType": "uint256",
@@ -128,6 +128,19 @@
           "type": "uint256"
         }
       ],
+      "name": "enterRaffle",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_raffleId",
+          "type": "uint256"
+        }
+      ],
       "name": "finalizeRaffle",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -141,9 +154,67 @@
           "type": "uint256"
         }
       ],
-      "name": "joinRaffle",
-      "outputs": [],
-      "stateMutability": "payable",
+      "name": "getRaffleById",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "prizePool",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "joinFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "numWinners",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "image",
+              "type": "string"
+            },
+            {
+              "internalType": "address[]",
+              "name": "participants",
+              "type": "address[]"
+            },
+            {
+              "internalType": "bool",
+              "name": "isFinalized",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "winners",
+              "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct RaffleContract.Raffle",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -245,10 +316,6 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
-    },
-    {
-      "stateMutability": "payable",
-      "type": "receive"
     }
   ]
 }
