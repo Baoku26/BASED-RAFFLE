@@ -1,321 +1,321 @@
 {
   "abi": [
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "PlatformFeeWithdrawn",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "raffleId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "prizePool",
-          "type": "uint256"
-        }
-      ],
-      "name": "RaffleCreated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "raffleId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "participant",
-          "type": "address"
-        }
-      ],
-      "name": "RaffleEntered",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "raffleId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "winners",
-          "type": "address[]"
-        }
-      ],
-      "name": "RaffleFinalized",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_joinFee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint8",
-          "name": "_numWinners",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_endTime",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "_image",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "_name",
-          "type": "string"
-        }
-      ],
-      "name": "createRaffle",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_raffleId",
-          "type": "uint256"
-        }
-      ],
-      "name": "enterRaffle",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_raffleId",
-          "type": "uint256"
-        }
-      ],
-      "name": "finalizeRaffle",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_raffleId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getRaffleById",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "creator",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "prizePool",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "joinFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "numWinners",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "endTime",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "image",
-              "type": "string"
-            },
-            {
-              "internalType": "address[]",
-              "name": "participants",
-              "type": "address[]"
-            },
-            {
-              "internalType": "bool",
-              "name": "isFinalized",
-              "type": "bool"
-            },
-            {
-              "internalType": "address[]",
-              "name": "winners",
-              "type": "address[]"
-            },
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct RaffleContract.Raffle",
-          "name": "",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "platformFees",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "raffleCount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "raffles",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "prizePool",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "joinFee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "numWinners",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "endTime",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "image",
-          "type": "string"
-        },
-        {
-          "internalType": "bool",
-          "name": "isFinalized",
-          "type": "bool"
-        },
-        {
-          "internalType": "string",
-          "name": "name",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "withdrawFees",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }
-  ]
+		{
+			"inputs": [],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "amount",
+					"type": "uint256"
+				}
+			],
+			"name": "PlatformFeeWithdrawn",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "raffleId",
+					"type": "uint256"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "creator",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "prizePool",
+					"type": "uint256"
+				}
+			],
+			"name": "RaffleCreated",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "raffleId",
+					"type": "uint256"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "participant",
+					"type": "address"
+				}
+			],
+			"name": "RaffleEntered",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "raffleId",
+					"type": "uint256"
+				},
+				{
+					"indexed": false,
+					"internalType": "address[]",
+					"name": "winners",
+					"type": "address[]"
+				}
+			],
+			"name": "RaffleFinalized",
+			"type": "event"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_joinFee",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint8",
+					"name": "_numWinners",
+					"type": "uint8"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_endTime",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "_image",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				}
+			],
+			"name": "createRaffle",
+			"outputs": [],
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_raffleId",
+					"type": "uint256"
+				}
+			],
+			"name": "enterRaffle",
+			"outputs": [],
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_raffleId",
+					"type": "uint256"
+				}
+			],
+			"name": "finalizeRaffle",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_raffleId",
+					"type": "uint256"
+				}
+			],
+			"name": "getRaffleById",
+			"outputs": [
+				{
+					"components": [
+						{
+							"internalType": "address",
+							"name": "creator",
+							"type": "address"
+						},
+						{
+							"internalType": "uint256",
+							"name": "prizePool",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "joinFee",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "numWinners",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "endTime",
+							"type": "uint256"
+						},
+						{
+							"internalType": "string",
+							"name": "image",
+							"type": "string"
+						},
+						{
+							"internalType": "address[]",
+							"name": "participants",
+							"type": "address[]"
+						},
+						{
+							"internalType": "bool",
+							"name": "isFinalized",
+							"type": "bool"
+						},
+						{
+							"internalType": "address[]",
+							"name": "winners",
+							"type": "address[]"
+						},
+						{
+							"internalType": "string",
+							"name": "name",
+							"type": "string"
+						}
+					],
+					"internalType": "struct RaffleContract.Raffle",
+					"name": "",
+					"type": "tuple"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "owner",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "platformFees",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "raffleCount",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "raffles",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "creator",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "prizePool",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "joinFee",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "numWinners",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "endTime",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "image",
+					"type": "string"
+				},
+				{
+					"internalType": "bool",
+					"name": "isFinalized",
+					"type": "bool"
+				},
+				{
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "withdrawFees",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	]
 }
