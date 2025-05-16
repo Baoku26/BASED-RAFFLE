@@ -21,7 +21,7 @@ type RafflesProps = {
 export default function HomePage() {
   const CONTRACT_ADDRESS =
     process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
-    "0xfedd796d011b13f364a2dda89eb328cf89cc4e88";
+    "0xb8363104b0a13d711e1941bf4ceebd2b9c57d96a";
 
   const [raffles, setRaffles] = useState<RafflesProps[]>([]);
   const [walletAddress, setWalletAddress] = useState<string>("");
