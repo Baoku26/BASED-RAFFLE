@@ -33,11 +33,14 @@ export default function NewRaffle() {
       if (typeof window.ethereum !== "undefined") {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
+
+        // Extract ABI array from the object
         const contractInstance = new ethers.Contract(
           "0xfedd796d011b13f364a2dda89eb328cf89cc4e88",
-          abiJson,
+          abiJson.abi,
           signer
         );
+
         setContract(contractInstance);
       }
     }
